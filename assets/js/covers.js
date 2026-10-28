@@ -308,5 +308,247 @@ window.COVERS = (function () {
     c.lineTo(ex + Math.cos(d - 2.4) * 12 * s, ey + Math.sin(d - 2.4) * 12 * s); c.closePath(); c.fill();
   }
 
-  return { pulse: pulse, runtime: runtime, dashboard: dashboard, mastering: mastering, robot: robot, stream: stream, agent: agent, bvp: bvp };
+  function mix(a, b, u) { return a + (b - a) * u; }
+
+  /* ManyCam and virtual devices: a webcam feeding a live frame with a picture-in-picture inset, and the same feed
+     turning up in a call as one more camera */
+  function webcam(c, w, h, t, bold) {
+    var f = frame(c, w, h, 480, 480, 48), s = f[2], lw = s * (bold || 1), i;
+    w = f[0]; h = f[1];
+    var cx = w * .22, cy = h * .42;
+    c.lineWidth = 2.6 * lw; c.strokeStyle = CREAM; c.fillStyle = BG;
+    box(c, cx - 50 * s, cy - 40 * s, 100 * s, 80 * s, 28 * s); c.fill(); c.stroke();
+    c.beginPath(); c.arc(cx, cy, 22 * s, 0, TAU); c.stroke();
+    c.fillStyle = GOLD; dot(c, cx, cy, 8 * s);
+    c.beginPath(); c.moveTo(cx, cy + 40 * s); c.lineTo(cx, cy + 86 * s); c.moveTo(cx - 34 * s, cy + 86 * s); c.lineTo(cx + 34 * s, cy + 86 * s); c.stroke();
+    var fx = w * .46, fy = h * .12, fw = w * .46, fh = h * .34;
+    box(c, fx, fy, fw, fh, 12 * s); c.stroke();
+    c.strokeStyle = DIM; c.lineWidth = 2 * lw;
+    c.beginPath(); c.arc(fx + fw * .34, fy + fh * .42, 20 * s, 0, TAU); c.stroke();
+    c.beginPath(); c.arc(fx + fw * .34, fy + fh + 14 * s, 46 * s, Math.PI * 1.22, Math.PI * 1.78); c.stroke();
+    box(c, fx + fw * .6, fy + fh * .54, fw * .32, fh * .34, 6 * s); c.fillStyle = BG; c.fill(); c.strokeStyle = GOLD; c.lineWidth = 2.4 * lw; c.stroke();
+    c.fillStyle = Math.floor(t * 2) % 2 ? GOLD : gold(.35); dot(c, fx + 16 * s, fy + 16 * s, 6 * s);
+    var gx = w * .46, gy = h * .58, gw = w * .46, gh = h * .3, tw = (gw - 10 * s) / 2, th = (gh - 10 * s) / 2;
+    for (i = 0; i < 4; i++) {
+      box(c, gx + (i % 2) * (tw + 10 * s), gy + (i >> 1) * (th + 10 * s), tw, th, 8 * s);
+      c.strokeStyle = i === 0 ? GOLD : LINE; c.lineWidth = (i === 0 ? 2.4 : 1.6) * lw; c.stroke();
+    }
+    c.setLineDash([4 * lw, 6 * lw]); c.strokeStyle = gold(.5); c.lineWidth = 1.6 * lw; c.beginPath();
+    c.moveTo(cx + 54 * s, cy - 12 * s); c.lineTo(fx - 8 * s, fy + fh * .5);
+    c.moveTo(cx + 54 * s, cy + 12 * s); c.lineTo(gx - 8 * s, gy + th * .5);
+    c.stroke(); c.setLineDash([]);
+  }
+
+  /* Krisp: a microphone, a voice going in buried in noise, and the same voice coming out clean */
+  function voice(c, w, h, t, bold) {
+    var f = frame(c, w, h, 480, 480, 48), s = f[2], lw = s * (bold || 1), i, x, y;
+    w = f[0]; h = f[1];
+    var mx = w * .15, my = h * .44;
+    c.strokeStyle = CREAM; c.lineWidth = 2.6 * lw; c.fillStyle = BG;
+    box(c, mx - 18 * s, my - 52 * s, 36 * s, 72 * s, 18 * s); c.fill(); c.stroke();
+    c.beginPath(); c.arc(mx, my, 34 * s, .15 * Math.PI, .85 * Math.PI); c.stroke();
+    c.beginPath(); c.moveTo(mx, my + 34 * s); c.lineTo(mx, my + 62 * s); c.moveTo(mx - 22 * s, my + 62 * s); c.lineTo(mx + 22 * s, my + 62 * s); c.stroke();
+    var x0 = w * .32, x1 = w * .93, r = rng(8 + Math.floor(t * 12));
+    // speech: a carrier under a syllable-like envelope, the same in both lines
+    var speech = function (x) { var u = (x - x0) / (x1 - x0); return Math.sin((x - x0) / (13 * s) + t * 6) * Math.sin(Math.PI * u) * (.55 + .45 * Math.sin(u * 9 + t * 1.3)); };
+    c.beginPath();
+    for (x = x0; x <= x1; x += 4 * s) { y = h * .28 + speech(x) * 38 * s + (r() - .5) * 44 * s; if (x === x0) c.moveTo(x, y); else c.lineTo(x, y); }
+    c.strokeStyle = DIM; c.lineWidth = 1.6 * lw; c.stroke();
+    c.beginPath();
+    for (x = x0; x <= x1; x += 2 * s) { y = h * .72 + speech(x) * 40 * s; if (x === x0) c.moveTo(x, y); else c.lineTo(x, y); }
+    c.strokeStyle = CREAM; c.lineWidth = 3 * lw; c.stroke();
+    box(c, w * .55, h * .455, w * .2, h * .09, 10 * s); c.fillStyle = BG; c.fill(); c.strokeStyle = GOLD; c.lineWidth = 2 * lw; c.stroke();
+    c.fillStyle = GOLD; for (i = 0; i < 3; i++) dot(c, w * .6 + i * 16 * s, h * .5, 4 * s);
+  }
+
+  /* the traffic controller: a crossroads from above, its camera watching the approach, cars boxed as they are
+     detected, and the signal it times */
+  function intersection(c, w, h, t, bold) {
+    var f = frame(c, w, h, 480, 480, 0), s = f[2], lw = s * (bold || 1), i, u, x, y;
+    w = f[0]; h = f[1];
+    var cx = w * .5, cy = h * .54, rw = 96 * s, a = cx - rw / 2, b = cx + rw / 2, p = cy - rw / 2, q = cy + rw / 2;
+    c.fillStyle = "rgba(255,236,210,.05)"; c.fillRect(0, p, w, rw); c.fillRect(a, 0, rw, h);
+    c.strokeStyle = LINE; c.lineWidth = 1.8 * lw; c.beginPath();
+    c.moveTo(0, p); c.lineTo(a, p); c.lineTo(a, 0); c.moveTo(b, 0); c.lineTo(b, p); c.lineTo(w, p);
+    c.moveTo(0, q); c.lineTo(a, q); c.lineTo(a, h); c.moveTo(b, h); c.lineTo(b, q); c.lineTo(w, q); c.stroke();
+    c.setLineDash([10 * s, 10 * s]); c.strokeStyle = DIM; c.lineWidth = 1.4 * lw; c.beginPath();
+    c.moveTo(0, cy); c.lineTo(a - 6 * s, cy); c.moveTo(b + 6 * s, cy); c.lineTo(w, cy);
+    c.moveTo(cx, 0); c.lineTo(cx, p - 6 * s); c.moveTo(cx, q + 6 * s); c.lineTo(cx, h); c.stroke(); c.setLineDash([]);
+    // the camera's view: the eastbound approach
+    var camx = a - 34 * s, camy = p - 44 * s;
+    c.fillStyle = gold(.07); c.beginPath(); c.moveTo(camx, camy); c.lineTo(0, q + 6 * s); c.lineTo(a - 4 * s, q + 6 * s); c.closePath(); c.fill();
+    var car = function (x, y, vert) {
+      var cw = (vert ? 20 : 38) * s, ch = (vert ? 38 : 20) * s;
+      c.fillStyle = cream(.85); box(c, x - cw / 2, y - ch / 2, cw, ch, 5 * s); c.fill();
+      return [x - cw / 2, y - ch / 2, cw, ch];
+    };
+    for (i = 0; i < 3; i++) {
+      u = frac(t * .09 + i / 3); x = -40 * s + u * (w + 80 * s); y = cy + rw / 4;
+      var bb = car(x, y, false);
+      if (x > 12 * s && x < a - 24 * s) { c.setLineDash([4 * lw, 4 * lw]); c.strokeStyle = GOLD; c.lineWidth = 1.6 * lw; c.strokeRect(bb[0] - 6 * s, bb[1] - 6 * s, bb[2] + 12 * s, bb[3] + 12 * s); c.setLineDash([]); }
+    }
+    u = frac(t * .07 + .5); car(cx - rw / 4, -40 * s + u * (h + 80 * s), true);
+    c.fillStyle = BG; c.strokeStyle = CREAM; c.lineWidth = 2.2 * lw;
+    box(c, camx - 16 * s, camy - 10 * s, 32 * s, 20 * s, 5 * s); c.fill(); c.stroke();
+    c.fillStyle = GOLD; dot(c, camx + 8 * s, camy, 4 * s);
+    var sx = b + 22 * s, sy = p - 104 * s, lit = Math.floor(t * .6) % 3;
+    box(c, sx, sy, 34 * s, 84 * s, 9 * s); c.fillStyle = BG; c.fill(); c.strokeStyle = CREAM; c.stroke();
+    for (i = 0; i < 3; i++) { c.fillStyle = i === lit ? GOLD : "rgba(255,236,210,.14)"; dot(c, sx + 17 * s, sy + 16 * s + i * 26 * s, 9 * s); }
+  }
+
+  /* IoT: stores and a solar plant send readings over MQTT to a broker, which feeds the summaries */
+  function iot(c, w, h, t, bold) {
+    var f = frame(c, w, h, 480, 480, 48), s = f[2], lw = s * (bold || 1), i, u;
+    w = f[0]; h = f[1];
+    var hub = [w * .57, h * .5], sites = [[w * .15, h * .2], [w * .15, h * .43], [w * .15, h * .66], [w * .3, h * .86]];
+    c.strokeStyle = LINE; c.lineWidth = 1.8 * lw; c.beginPath();
+    sites.forEach(function (p) { c.moveTo(p[0] + 34 * s, p[1]); c.lineTo(hub[0] - 36 * s, hub[1]); });
+    c.moveTo(hub[0] + 36 * s, hub[1]); c.lineTo(w * .76, hub[1]); c.stroke();
+    sites.forEach(function (p, k) {
+      u = frac(t * .45 + k * .27); c.globalAlpha = Math.sin(u * Math.PI); c.fillStyle = GOLD;
+      c.fillRect(mix(p[0] + 34 * s, hub[0] - 36 * s, u) - 5 * lw, mix(p[1], hub[1], u) - 5 * lw, 10 * lw, 10 * lw);
+    });
+    c.globalAlpha = 1;
+    c.strokeStyle = CREAM; c.lineWidth = 2.4 * lw; c.fillStyle = BG;
+    for (i = 0; i < 3; i++) { // three shopfronts, each with its camera sensor
+      var p = sites[i];
+      c.beginPath(); c.moveTo(p[0] - 30 * s, p[1] - 4 * s); c.lineTo(p[0], p[1] - 28 * s); c.lineTo(p[0] + 30 * s, p[1] - 4 * s); c.closePath(); c.fill(); c.stroke();
+      box(c, p[0] - 24 * s, p[1] - 4 * s, 48 * s, 32 * s, 3 * s); c.fill(); c.stroke();
+      c.fillStyle = GOLD; dot(c, p[0] + 12 * s, p[1] + 8 * s, 4 * s); c.fillStyle = BG;
+    }
+    var sp = sites[3]; // the solar panel
+    c.beginPath(); c.moveTo(sp[0] - 34 * s, sp[1] + 14 * s); c.lineTo(sp[0] - 18 * s, sp[1] - 16 * s); c.lineTo(sp[0] + 34 * s, sp[1] - 16 * s); c.lineTo(sp[0] + 18 * s, sp[1] + 14 * s); c.closePath(); c.fill(); c.stroke();
+    c.strokeStyle = DIM; c.lineWidth = 1.2 * lw; c.beginPath();
+    c.moveTo(sp[0] - 26 * s, sp[1] - 1 * s); c.lineTo(sp[0] + 26 * s, sp[1] - 1 * s); c.moveTo(sp[0], sp[1] - 16 * s); c.lineTo(sp[0] - 8 * s, sp[1] + 14 * s); c.stroke();
+    c.strokeStyle = GOLD; c.lineWidth = 2.6 * lw; c.beginPath(); c.arc(hub[0], hub[1], 36 * s, 0, TAU); c.fill(); c.stroke();
+    c.strokeStyle = DIM; c.lineWidth = 2 * lw; c.beginPath();
+    for (i = 0; i < 3; i++) { c.moveTo(hub[0] - 16 * s, hub[1] - 10 * s + i * 10 * s); c.lineTo(hub[0] + (6 + 10 * (i % 2)) * s, hub[1] - 10 * s + i * 10 * s); }
+    c.stroke();
+    for (i = 0; i < 4; i++) { // the summaries
+      var bh = (34 + 30 * (.5 + .5 * Math.sin(t * .8 + i * 1.7))) * s;
+      c.fillStyle = i === 3 ? GOLD : CREAM; c.fillRect(w * .79 + i * 18 * s, hub[1] + 40 * s - bh, 11 * s, bh);
+    }
+  }
+
+  /* the VPN: a laptop and a server joined by a tunnel, a lock over it, packets riding inside */
+  function tunnel(c, w, h, t, bold) {
+    var f = frame(c, w, h, 480, 480, 48), s = f[2], lw = s * (bold || 1), i, u;
+    w = f[0]; h = f[1];
+    var y = h * .52, x0 = w * .28, x1 = w * .72;
+    c.setLineDash([2 * lw, 8 * lw]); c.strokeStyle = LINE; c.lineWidth = 1.6 * lw; c.beginPath(); // the open internet around it
+    c.moveTo(x0, y - 40 * s); c.bezierCurveTo(w * .4, y - 170 * s, w * .6, y + 20 * s, x1, y - 40 * s);
+    c.moveTo(x0, y + 40 * s); c.bezierCurveTo(w * .42, y + 160 * s, w * .58, y - 10 * s, x1, y + 40 * s); c.stroke(); c.setLineDash([]);
+    c.fillStyle = "rgba(255,236,210,.04)"; c.fillRect(x0, y - 22 * s, x1 - x0, 44 * s);
+    c.strokeStyle = CREAM; c.lineWidth = 2.6 * lw; c.beginPath();
+    c.moveTo(x0, y - 22 * s); c.lineTo(x1, y - 22 * s); c.moveTo(x0, y + 22 * s); c.lineTo(x1, y + 22 * s); c.stroke();
+    c.strokeStyle = GOLD; c.lineWidth = 2 * lw;
+    c.beginPath(); c.ellipse(x0, y, 8 * s, 22 * s, 0, 0, TAU); c.stroke();
+    c.beginPath(); c.ellipse(x1, y, 8 * s, 22 * s, 0, 0, TAU); c.stroke();
+    for (i = 0; i < 6; i++) { u = frac(t * .35 + i / 6); c.globalAlpha = Math.sin(u * Math.PI); c.fillStyle = GOLD; c.fillRect(mix(x0, x1, u) - 7 * lw, y - 5 * lw, 14 * lw, 10 * lw); }
+    c.globalAlpha = 1;
+    var lx = w * .5, ly = y - 66 * s; // the lock over the middle
+    c.strokeStyle = GOLD; c.lineWidth = 2.6 * lw; c.beginPath(); c.arc(lx, ly - 4 * s, 12 * s, Math.PI, 0); c.stroke();
+    box(c, lx - 18 * s, ly - 4 * s, 36 * s, 28 * s, 5 * s); c.fillStyle = BG; c.fill(); c.stroke();
+    c.fillStyle = GOLD; dot(c, lx, ly + 9 * s, 3.5 * s);
+    c.strokeStyle = CREAM; c.lineWidth = 2.4 * lw; c.fillStyle = BG; // the laptop
+    box(c, x0 - 104 * s, y - 36 * s, 76 * s, 50 * s, 6 * s); c.fill(); c.stroke();
+    c.beginPath(); c.moveTo(x0 - 114 * s, y + 24 * s); c.lineTo(x0 - 18 * s, y + 24 * s); c.lineTo(x0 - 26 * s, y + 14 * s); c.lineTo(x0 - 106 * s, y + 14 * s); c.closePath(); c.stroke();
+    box(c, x1 + 26 * s, y - 52 * s, 62 * s, 104 * s, 8 * s); c.fill(); c.stroke(); // the server
+    c.strokeStyle = DIM; c.lineWidth = 1.6 * lw; c.beginPath();
+    for (i = 0; i < 3; i++) { c.moveTo(x1 + 38 * s, y - 30 * s + i * 30 * s); c.lineTo(x1 + 66 * s, y - 30 * s + i * 30 * s); }
+    c.stroke();
+    for (i = 0; i < 3; i++) { c.fillStyle = (Math.floor(t * 3) + i) % 3 ? GOLD : DIM; dot(c, x1 + 77 * s, y - 30 * s + i * 30 * s, 3.5 * lw); }
+  }
+
+  /* secure file sharing: files cut into chunks, only the changed chunks going on, through the lock, to the partners */
+  function vault(c, w, h, t, bold) {
+    var f = frame(c, w, h, 480, 480, 48), s = f[2], lw = s * (bold || 1), i, u;
+    w = f[0]; h = f[1];
+    var doc = function (x, y, lit) {
+      c.beginPath(); c.moveTo(x, y); c.lineTo(x + 40 * s, y); c.lineTo(x + 54 * s, y + 14 * s); c.lineTo(x + 54 * s, y + 70 * s); c.lineTo(x, y + 70 * s); c.closePath();
+      c.fillStyle = BG; c.fill(); c.strokeStyle = lit ? CREAM : DIM; c.lineWidth = 2.2 * lw; c.stroke();
+      c.strokeStyle = LINE; c.lineWidth = 1.4 * lw; c.beginPath();
+      for (var k = 0; k < 3; k++) { c.moveTo(x + 10 * s, y + 30 * s + k * 12 * s); c.lineTo(x + 44 * s, y + 30 * s + k * 12 * s); }
+      c.stroke();
+    };
+    doc(w * .06, h * .2, false); doc(w * .1, h * .3, false); doc(w * .14, h * .4, true);
+    var gx = w * .32, gy = h * .3; // the chunks, a few of them changed
+    for (i = 0; i < 12; i++) {
+      var ch = i === 2 || i === 7 || i === 9, x = gx + (i % 3) * 22 * s, y = gy + (i / 3 | 0) * 22 * s;
+      c.fillStyle = ch ? GOLD : "rgba(255,236,210,.16)"; c.fillRect(x, y, 16 * s, 16 * s);
+    }
+    var lx = w * .6, ly = h * .52; // the lock
+    c.strokeStyle = GOLD; c.lineWidth = 3 * lw; c.beginPath(); c.arc(lx, ly - 18 * s, 22 * s, Math.PI, 0); c.stroke();
+    box(c, lx - 32 * s, ly - 18 * s, 64 * s, 52 * s, 8 * s); c.fillStyle = BG; c.fill(); c.stroke();
+    c.fillStyle = GOLD; dot(c, lx, ly + 4 * s, 5 * s); c.fillRect(lx - 2 * s, ly + 6 * s, 4 * s, 12 * s);
+    for (i = 0; i < 3; i++) { // the changed chunks travelling through it
+      u = frac(t * .4 + i / 3); c.globalAlpha = Math.sin(u * Math.PI); c.fillStyle = GOLD;
+      c.fillRect(mix(gx + 70 * s, w * .8, u) - 6 * s, mix(gy + 40 * s, h * .52, u) - 6 * s, 12 * s, 12 * s);
+    }
+    c.globalAlpha = 1;
+    c.strokeStyle = CREAM; c.lineWidth = 2.2 * lw; c.fillStyle = BG; // two partners' screens
+    for (i = 0; i < 2; i++) {
+      var sy = h * .34 + i * h * .26;
+      box(c, w * .8, sy, 66 * s, 44 * s, 6 * s); c.fill(); c.stroke();
+      c.beginPath(); c.moveTo(w * .8 + 33 * s, sy + 44 * s); c.lineTo(w * .8 + 33 * s, sy + 56 * s); c.moveTo(w * .8 + 18 * s, sy + 56 * s); c.lineTo(w * .8 + 48 * s, sy + 56 * s); c.stroke();
+    }
+  }
+
+  /* CAM: a plate with a pocket cleared by offset passes, a row of drilled holes, and the cutter working its way round */
+  function toolpath(c, w, h, t, bold) {
+    var f = frame(c, w, h, 480, 480, 48), s = f[2], lw = s * (bold || 1), i;
+    w = f[0]; h = f[1];
+    box(c, w * .1, h * .14, w * .8, h * .72, 26 * s); c.fillStyle = "rgba(255,236,210,.03)"; c.fill(); c.strokeStyle = CREAM; c.lineWidth = 2.6 * lw; c.stroke();
+    var px = w * .2, py = h * .24, pw = w * .6, ph = h * .34;
+    for (i = 0; i < 6; i++) { // offset passes, outermost first
+      var o = i * 15 * s;
+      if (pw - 2 * o < 10 * s || ph - 2 * o < 10 * s) break;
+      box(c, px + o, py + o, pw - 2 * o, ph - 2 * o, Math.max(4 * s, 24 * s - o * .6));
+      if (i) c.setLineDash([6 * lw, 5 * lw]);
+      c.strokeStyle = i ? DIM : GOLD; c.lineWidth = (i ? 1.5 : 2.4) * lw; c.stroke(); c.setLineDash([]);
+    }
+    for (i = 0; i < 5; i++) { // drilled holes
+      var hx = w * .22 + i * w * .14, hy = h * .73;
+      c.strokeStyle = CREAM; c.lineWidth = 2 * lw; c.beginPath(); c.arc(hx, hy, 9 * s, 0, TAU); c.stroke();
+      c.strokeStyle = DIM; c.lineWidth = 1.2 * lw; c.beginPath(); c.moveTo(hx - 15 * s, hy); c.lineTo(hx + 15 * s, hy); c.moveTo(hx, hy - 15 * s); c.lineTo(hx, hy + 15 * s); c.stroke();
+    }
+    var per = 2 * (pw + ph), d = frac(t * .07) * per, cx, cy; // the cutter, riding the outer pass
+    if (d < pw) { cx = px + d; cy = py; } else if (d < pw + ph) { cx = px + pw; cy = py + d - pw; } else if (d < 2 * pw + ph) { cx = px + pw - (d - pw - ph); cy = py + ph; } else { cx = px; cy = py + ph - (d - 2 * pw - ph); }
+    c.fillStyle = BG; c.strokeStyle = GOLD; c.lineWidth = 2.6 * lw; c.beginPath(); c.arc(cx, cy, 11 * s, 0, TAU); c.fill(); c.stroke();
+    c.fillStyle = GOLD; dot(c, cx, cy, 3.5 * s);
+  }
+
+  /* the lakehouse: events streaming in from the sources, landing raw, refined, and served from the gold layer */
+  function lake(c, w, h, t, bold) {
+    var f = frame(c, w, h, 480, 480, 48), s = f[2], lw = s * (bold || 1), i, u;
+    w = f[0]; h = f[1];
+    var srcs = [h * .22, h * .44, h * .66];
+    c.strokeStyle = CREAM; c.lineWidth = 2.2 * lw; c.fillStyle = BG;
+    srcs.forEach(function (y) { // three sources, as small cylinders
+      var x = w * .12;
+      c.beginPath(); c.ellipse(x, y - 14 * s, 22 * s, 7 * s, 0, 0, TAU); c.fill(); c.stroke();
+      c.beginPath(); c.moveTo(x - 22 * s, y - 14 * s); c.lineTo(x - 22 * s, y + 14 * s); c.ellipse(x, y + 14 * s, 22 * s, 7 * s, 0, Math.PI, 0, true); c.lineTo(x + 22 * s, y - 14 * s); c.stroke();
+    });
+    var lx = w * .42, lw2 = w * .5, layers = [[h * .7, "rgba(255,236,210,.2)"], [h * .5, cream(.55)], [h * .3, GOLD]];
+    layers.forEach(function (L, k) {
+      box(c, lx, L[0] - 18 * s, lw2, 36 * s, 12 * s); c.fillStyle = k === 2 ? gold(.14) : "rgba(255,236,210,.04)"; c.fill();
+      c.strokeStyle = L[1]; c.lineWidth = (k === 2 ? 2.6 : 2) * lw; c.stroke();
+    });
+    c.strokeStyle = DIM; c.lineWidth = 1.6 * lw; c.beginPath(); // up through the layers
+    for (i = 0; i < 2; i++) { var ax = lx + lw2 * (.3 + i * .4); c.moveTo(ax, layers[i][0] - 22 * s); c.lineTo(ax, layers[i + 1][0] + 22 * s); c.moveTo(ax - 6 * s, layers[i + 1][0] + 30 * s); c.lineTo(ax, layers[i + 1][0] + 22 * s); c.lineTo(ax + 6 * s, layers[i + 1][0] + 30 * s); }
+    c.stroke();
+    for (i = 0; i < 9; i++) { // events landing in the raw layer
+      u = frac(t * .5 + i / 9); var y0 = srcs[i % 3];
+      c.globalAlpha = Math.sin(u * Math.PI); c.fillStyle = i % 3 ? CREAM : GOLD;
+      c.fillRect(mix(w * .12 + 26 * s, lx + 14 * s, u) - 4 * lw, mix(y0, layers[0][0], u) - 4 * lw, 8 * lw, 8 * lw);
+    }
+    c.globalAlpha = 1;
+    for (i = 0; i < 5; i++) { // served
+      var bh = (18 + 26 * (.5 + .5 * Math.sin(t * .7 + i * 1.3))) * s;
+      c.fillStyle = i === 4 ? GOLD : CREAM; c.fillRect(lx + lw2 * .2 + i * 22 * s, h * .3 - 30 * s - bh, 12 * s, bh);
+    }
+  }
+
+  return { pulse: pulse, runtime: runtime, dashboard: dashboard, mastering: mastering, robot: robot, stream: stream, agent: agent,
+    webcam: webcam, voice: voice, intersection: intersection, iot: iot, tunnel: tunnel, vault: vault, toolpath: toolpath, lake: lake, bvp: bvp };
 })();

@@ -279,7 +279,8 @@
     glints = [];
     for (i = 0; i < 160; i++) glints.push({ d: Math.pow(r(), 1.5), u: (r() + r() + r()) / 1.5 - 1, w: 4 + r() * 14, s: .6 + r() * 1.6, p: r() * TAU, a: .5 + r() * .5 });
   }
-  // the reflection: rows copied from above the waterline in reverse order, each nudged sideways by a slow ripple
+  // the reflection: rows copied from above the waterline in reverse order, each nudged sideways by ripples
+  // that travel down the frame, toward the viewer, as the current carries them
   function drawLake(t) {
     var hd = up.height, wd = cv.width, n = cv.height - hd, st = Math.max(2, Math.round(2 * dpr)), pad = 12 * dpr, y, sy, d, o;
     ctx.fillStyle = rgb(col("water")); ctx.fillRect(0, hd, wd, n);
@@ -287,7 +288,7 @@
       sy = hd - y - st;
       if (sy < 0) break;
       d = y / n;
-      o = reduce ? 0 : (Math.sin(t * 1.4 + y / dpr * .23) * (.4 + d * 3.2) + Math.sin(t * .8 + y / dpr * .061) * d * 4.5) * dpr;
+      o = reduce ? 0 : (Math.sin(y / dpr * .23 - t * 3.6) * (.6 + d * 4.2) + Math.sin(y / dpr * .061 - t * 1.8) * d * 6) * dpr;
       ctx.drawImage(up, 0, sy, wd, st, o - pad, hd + y, wd + pad * 2, st);
     }
   }
@@ -297,9 +298,10 @@
     ctx.fillStyle = g; ctx.fillRect(0, horizon, W, lh);
     lightPath(sun.x, 1 - night, lc); lightPath(moon.x, night * .7, lc);
     ctx.fillStyle = rgb(lc, .1 + .08 * (1 - night)); ctx.fillRect(0, horizon, W, 1);
-    for (i = 0; i < 6; i++) { // faint lines where the wind touches the water
-      ctx.fillStyle = rgb(lc, (.022 + .018 * (reduce ? 0 : Math.sin(t * .4 + i * 1.7))) * (1 - night * .5));
-      ctx.fillRect(0, horizon + lh * (.1 + i * .14), W, 1);
+    for (i = 0; i < 6; i++) { // faint lines on the current, drifting toward the viewer and spreading as they come
+      var f = reduce ? .1 + i * .14 : (i / 6 + t * .025) % 1;
+      ctx.fillStyle = rgb(lc, (.022 + .018 * (reduce ? 0 : Math.sin(t * .4 + i * 1.7))) * (1 - night * .5) * Math.sin(f * Math.PI));
+      ctx.fillRect(0, horizon + lh * Math.pow(f, 1.6), W, 1);
     }
     glitter(sun.x, 1 - night, lc, t, sunR); glitter(moon.x, night * .65, lc, t, moonR);
   }
@@ -313,15 +315,16 @@
   }
   function glitter(x0, a, lc, t, r0) {
     if (a < .02) return;
-    var lh = H - horizon, i, g, y, x, tw, al, w;
+    var lh = H - horizon, i, g, d, y, x, tw, al, w;
     ctx.fillStyle = rgb(lc);
     for (i = 0; i < glints.length; i++) {
-      g = glints[i]; y = horizon + 2 + g.d * lh * .95;
-      x = x0 + g.u * (r0 * 1.3 + g.d * W * .1) + (reduce ? 0 : Math.sin(t * g.s + g.p) * 5);
+      // each glint rides the current down the frame, faster as it nears, and comes round again from the far water
+      g = glints[i]; d = reduce ? g.d : (g.d + t * .03 * (.4 + g.d)) % 1; y = horizon + 2 + d * lh * .95;
+      x = x0 + g.u * (r0 * 1.3 + d * W * .1) + (reduce ? 0 : Math.sin(t * g.s + g.p) * 5);
       tw = reduce ? .7 : .5 + .5 * Math.sin(t * g.s * 2.7 + g.p * 2.3);
-      al = a * g.a * tw * tw * (1 - g.d * .7);
+      al = a * g.a * tw * tw * (1 - d * .7);
       if (al < .03) continue;
-      w = g.w * (1 + g.d * 1.5); ctx.globalAlpha = al; ctx.fillRect(x - w / 2, y, w, 1 + g.d * 1.4);
+      w = g.w * (1 + d * 1.5); ctx.globalAlpha = al; ctx.fillRect(x - w / 2, y, w, 1 + d * 1.4);
     }
     ctx.globalAlpha = 1;
   }

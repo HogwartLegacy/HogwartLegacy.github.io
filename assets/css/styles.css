@@ -32,7 +32,9 @@
 }
 
 *,*::before,*::after{box-sizing:border-box}
-html{-webkit-text-size-adjust:100%;scroll-padding-top:16px}
+html{-webkit-text-size-adjust:100%;scroll-padding-top:16px;scrollbar-gutter:stable}
+/* a story is open: the page behind it, and the voyage with it, stays where it is */
+html.detail-open{overflow:hidden}
 @media (prefers-reduced-motion:no-preference){html{scroll-behavior:smooth}}
 body{margin:0;min-height:100vh;background:var(--base);color:var(--text);font-family:var(--body);font-size:16px;line-height:1.6;
   -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;overflow-x:hidden;overflow-x:clip;transition:background-color 1.4s var(--ease)}
@@ -76,7 +78,7 @@ svg.i{width:16px;height:16px;flex:none;fill:none;stroke:currentColor;stroke-widt
   -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box exclude,linear-gradient(#000 0 0)}
 
 /* ---------- hero ---------- */
-.hero{position:relative;display:flex;min-height:100vh;min-height:100svh}
+.hero{position:relative;display:flex;min-height:100vh;min-height:100svh;overflow-x:clip}
 .scrim{position:absolute;inset:0;pointer-events:none;
   background:linear-gradient(90deg,rgba(var(--scrim),.8),rgba(var(--scrim),.62) 28%,rgba(var(--scrim),.26) 50%,rgba(var(--scrim),0) 68%)}
 .hero-inner{position:relative;display:flex;flex-direction:column;width:100%;padding-bottom:110px}
@@ -98,6 +100,8 @@ svg.i{width:16px;height:16px;flex:none;fill:none;stroke:currentColor;stroke-widt
 .hero-copy{margin-top:clamp(48px,14vh,160px);max-width:560px}
 .hero-copy h1{font-family:var(--display);font-weight:400;font-size:clamp(68px,8.4vw,120px);line-height:.9;letter-spacing:-.015em;color:var(--title);text-shadow:0 2px 30px rgba(0,0,0,.3)}
 .hero-copy h1 .word{display:inline-block;white-space:nowrap}
+/* the full name runs wider than the copy column on desktop; keep it on one line there */
+@media (min-width:761px){.hero-copy h1{white-space:nowrap}}
 .hero-copy h1 .ltr{display:inline-block}
 .alt{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin-top:20px;font-size:15px;line-height:1.4;color:var(--muted)}
 .alt .role{color:var(--text);font-weight:500}
@@ -163,6 +167,7 @@ svg.i{width:16px;height:16px;flex:none;fill:none;stroke:currentColor;stroke-widt
 .sheet-top{position:relative;display:flex;flex-wrap:wrap;align-items:center;gap:14px 22px;padding-right:56px}
 .sheet-top h2{font-family:var(--display);font-weight:400;font-size:clamp(34px,3.4vw,46px);line-height:1;color:var(--title)}
 .sheet-top h2:focus{outline:0}
+.sheet-where{font-size:14px;color:var(--muted)}
 .sheet-tools{display:flex;flex-wrap:wrap;gap:10px}
 .sheet-tools:empty{display:none}
 .sheet .pill{min-height:38px;padding:0 16px;font-size:13.5px;background:var(--pane-hi)}
@@ -229,7 +234,7 @@ main{position:relative;padding:28px 0 84px}
 .shelf-head p a{color:var(--text);text-decoration-color:var(--hair);text-underline-offset:3px}
 .grid{display:grid;gap:20px}
 .shelf-cards .grid{grid-template-columns:repeat(4,minmax(0,1fr))}
-.shelf-compact .grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+.shelf-compact .grid{grid-template-columns:repeat(2,minmax(0,1fr))}
 .shelf-notes .grid{grid-template-columns:repeat(3,minmax(0,1fr))}
 
 .card{display:flex;flex-direction:column;overflow:hidden;border-radius:16px}
@@ -307,6 +312,60 @@ footer{padding:0 0 44px;font-size:13px;color:var(--muted)}
 .sitemap a:hover,.sitemap a:focus-visible{color:var(--title);text-decoration:underline;text-decoration-color:var(--hair);text-underline-offset:3px}
 .copy{margin-left:auto;white-space:nowrap}
 
+/* ---------- the hero's words as particles (particles.js): the real text stays, unpainted, for readers and selection ---------- */
+.hero-copy{position:relative}
+.particles{position:absolute;z-index:1;pointer-events:none}
+.particles-on #name,.particles-on #alt>span,.particles-on #bio,.particles-on #bio strong{-webkit-text-fill-color:transparent;text-shadow:none}
+.particles-on .hero-copy h1 .ltr,.particles-on #alt,.particles-on #bio{opacity:1!important;filter:none!important;transform:none!important;transition:none!important}
+
+/* ---------- the voyage: a scroll track over the scene, while the camera goes aboard the boat and walks its gallery ---------- */
+.voyage{display:none;position:relative;height:720vh}
+.has-voyage .voyage{display:block}
+.voyage-stick{position:sticky;top:0;height:100vh;height:100svh;overflow:hidden;pointer-events:none}
+.voyage-inner{position:relative;height:100%}
+.voyage-intro{position:absolute;left:32px;bottom:22vh;max-width:470px;opacity:var(--vi,0);transform:translateY(calc((1 - var(--vi,0)) * 14px))}
+/* the button waits, unseen and out of the tab order, until the words above it are in view (.intro-on, set in app.js) */
+.voyage-intro .pill{margin-top:22px;visibility:hidden}
+.intro-on .voyage-intro .pill{visibility:visible;pointer-events:auto}
+.voyage-intro h2{font-family:var(--display);font-weight:400;font-size:clamp(42px,4.8vw,68px);line-height:1;color:var(--title);text-shadow:0 2px 26px rgba(0,0,0,.5)}
+.voyage-intro p{margin-top:14px;font-size:16.5px;line-height:1.6;color:var(--text);text-shadow:0 1px 14px rgba(0,0,0,.65)}
+.voyage-skip{position:absolute;right:32px;top:22px;padding:9px 15px;border-radius:999px;font-size:13px;color:var(--muted);text-decoration:none;background:var(--pane);box-shadow:var(--shadow);pointer-events:auto;transition:color .2s var(--ease),opacity .4s var(--ease),visibility 0s linear .4s}
+.voyage-skip:hover{color:var(--title)}
+.voyage-skip,.voyage-now,.voyage-hint{visibility:hidden;opacity:0;transition:opacity .45s var(--ease),visibility 0s linear .45s}
+/* the voyage's own controls show while its screen is pinned (.voyage-live), and the counter once you are aboard */
+.voyage-live .voyage-skip,.on-board .voyage-now,.on-board .voyage-hint{visibility:visible;opacity:1;transition-delay:0s}
+.voyage-now{position:absolute;left:32px;bottom:30px;display:flex;align-items:center;gap:14px;pointer-events:auto}
+.voyage-count{font:500 12.5px var(--mono);letter-spacing:.06em;color:var(--text);text-shadow:0 1px 10px rgba(0,0,0,.6)}
+.voyage-hint{position:absolute;right:32px;bottom:38px;font-size:13px;color:var(--text);text-shadow:0 1px 10px rgba(0,0,0,.7)}
+/* the pictures as buttons: out of sight until a keyboard reaches them */
+.voyage-list{position:absolute;left:32px;top:24px;pointer-events:auto}
+.voyage-list button{position:absolute;width:1px;height:1px;padding:0;border:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.voyage-list button:focus-visible{position:static;width:auto;height:auto;clip:auto;padding:9px 15px;border-radius:999px;font:inherit;font-size:14px;font-weight:500;color:var(--title);background:var(--pane);box-shadow:var(--shadow)}
+/* while the voyage runs, the professional work hangs in the boat rather than on a shelf */
+.has-voyage .shelf[data-gallery]{display:none}
+/* the hero's shade fades out at its foot, so the lake runs on into the voyage without a seam */
+@media (min-width:761px){.has-voyage .scrim{-webkit-mask-image:linear-gradient(#000 calc(100% - 34vh),transparent);mask-image:linear-gradient(#000 calc(100% - 34vh),transparent)}}
+/* inside the boat the sun's rays would sit on the cabin walls: they fade as the camera goes aboard */
+.fx{opacity:calc(1 - var(--inside,0))}
+.scene-pick,.scene-pick body{cursor:pointer}
+
+/* ---------- the story behind a picture ---------- */
+.detail{width:min(920px,calc(100vw - 32px));max-height:calc(100vh - 48px);padding:0;border:0;border-radius:22px;color:var(--text);background:var(--sheet);
+  box-shadow:var(--shadow),0 30px 90px rgba(0,0,0,.55);-webkit-backdrop-filter:blur(22px) saturate(1.2);backdrop-filter:blur(22px) saturate(1.2);overflow:auto;overscroll-behavior:contain}
+.detail[open]{display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr);animation:detailIn .5s var(--ease-out)}
+@keyframes detailIn{from{opacity:0;transform:translateY(14px) scale(.985)}}
+.detail::backdrop{background:rgba(6,6,12,.6);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.detail-art{position:relative;min-height:320px;background:#0D0F18;border-right:1px solid var(--hair)}
+.detail-art canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.detail-body{display:grid;align-content:start;gap:12px;padding:32px 34px 34px}
+.detail-body h2{padding-right:44px;font-family:var(--display);font-weight:400;font-size:clamp(30px,3.2vw,42px);line-height:1.05;color:var(--title)}
+.detail-text{font-size:15.5px;line-height:1.62;color:var(--text)}
+.detail-points{display:grid;gap:7px;padding-left:18px;list-style:disc;font-size:14px;line-height:1.58;color:var(--muted)}
+.detail-points li::marker{color:var(--faint)}
+.detail-stack{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.detail-stack span{padding:4px 10px;border-radius:999px;font:500 11.5px var(--mono);color:var(--text);background:rgba(255,236,210,.06);box-shadow:inset 0 0 0 1px var(--hair)}
+.detail .sheet-close{top:16px;right:16px}
+
 /* ---------- smaller screens ---------- */
 @media (max-width:1100px){
   .shelf-cards .grid{grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -332,6 +391,20 @@ footer{padding:0 0 44px;font-size:13px;color:var(--muted)}
   .hero-copy{margin-top:calc(68svh - 250px)}
   .nav-links,.cue,.scene-log{display:none}
   .topbar .icon-btn{margin-left:auto}
+  /* with the voyage, the scene stays fixed behind the whole page here too; the hero's solid ground fades back into
+     it at the foot, where the voyage begins */
+  .has-voyage #scene,.has-voyage .fx{position:fixed;inset:0;height:100%;-webkit-mask-image:none;mask-image:none}
+  .has-voyage .veil{display:block}
+  .has-voyage .hero-inner{padding-bottom:18svh}
+  .has-voyage .scrim{background:linear-gradient(180deg,rgba(var(--scrim),.3),rgba(var(--scrim),0) 18svh,rgba(var(--scrim),0) 30svh,var(--solid-a) 52svh,var(--solid) 68svh,var(--solid) calc(100% - 16svh),rgba(var(--scrim),0) 100%)}
+  .voyage-intro{left:18px;right:18px;bottom:18svh}
+  .voyage-skip{right:18px;top:16px}
+  .voyage-now{left:18px;right:18px;bottom:22px;flex-wrap:wrap;gap:8px 12px}
+  .voyage-hint{display:none}
+  .voyage-list{left:18px}
+  .detail[open]{grid-template-columns:1fr}
+  .detail-art{min-height:210px;border-right:0;border-bottom:1px solid var(--hair)}
+  .detail-body{padding:24px 20px 26px}
   .card,.pill,.chip{background:rgba(22,19,30,.88)}
   .sheet{padding:24px 20px 30px;border-radius:18px;background:rgba(22,19,30,.97)}
   .sheet-top{padding-right:0}
