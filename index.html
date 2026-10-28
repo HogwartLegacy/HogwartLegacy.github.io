@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Maris · Software Engineer</title>
+<meta name="description" content="Maris builds on-device AI, real-time signal processing and native apps: a C++ engine that reads vital signs from a webcam, local LLMs on Windows, audio DSP and lean web frontends.">
+<meta name="author" content="Maris">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#0B1132">
+<link rel="canonical" href="https://hogwartlegacy.github.io/">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Maris">
+<meta property="og:title" content="Maris · Software Engineer">
+<meta property="og:description" content="On-device AI, real-time signal processing and native apps.">
+<meta property="og:url" content="https://hogwartlegacy.github.io/">
+<meta property="og:image" content="https://hogwartlegacy.github.io/assets/img/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<!-- the theme is set before the first paint: the visitor's last choice, else their system's -->
+<script>(function(){var d=document.documentElement,t;d.classList.add("js");try{t=localStorage.getItem("theme")}catch(e){}
+if(t!=="night"&&t!=="dusk")t=window.matchMedia&&matchMedia("(prefers-color-scheme: dark)").matches?"night":"dusk";d.dataset.theme=t})();</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap">
+<link rel="stylesheet" href="assets/css/styles.css">
+<link rel="modulepreload" href="assets/vendor/three.module.min.js">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Person","name":"Maris","url":"https://hogwartlegacy.github.io/","jobTitle":"Software Engineer","sameAs":["https://github.com/HogwartLegacy"]}</script>
+</head>
+<body>
+<!-- the scene: a live WebGL canvas, its light (rays and flare, placed by scene3d.js), and the veil that blurs it once you scroll -->
+<canvas id="scene" aria-hidden="true"></canvas>
+<div class="fx" aria-hidden="true"><div class="rays" id="rays"><i></i></div><div class="flare" id="flare"></div><div class="grain"></div></div>
+<div class="veil" aria-hidden="true"></div>
+<a class="skip" href="#work">Skip to work</a>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-gh" viewBox="0 0 24 24"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.4 5.4 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></symbol>
+  <symbol id="i-in" viewBox="0 0 24 24"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-4 0v7h-4v-7a6 6 0 0 1 6-6z"/><rect width="4" height="12" x="2" y="9"/><circle cx="4" cy="4" r="2"/></symbol>
+  <symbol id="i-cap" viewBox="0 0 24 24"><path d="M22 10v6"/><path d="M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></symbol>
+  <symbol id="i-xlogo" viewBox="0 0 24 24"><path d="M4 4l11.7 16H20L8.3 4z"/><path d="M4 20l6.8-6.8"/><path d="M13.2 10.8 20 4"/></symbol>
+  <symbol id="i-doc" viewBox="0 0 24 24"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/></symbol>
+  <symbol id="i-mail" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></symbol>
+  <symbol id="i-cal" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M16 3v4"/><path d="M8 3v4"/><path d="M4 11h16"/></symbol>
+  <symbol id="i-out" viewBox="0 0 24 24"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></symbol>
+  <symbol id="i-down" viewBox="0 0 24 24"><path d="M12 4v12"/><path d="m6 11 6 6 6-6"/><path d="M5 20h14"/></symbol>
+  <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M12 5v14"/><path d="m6 13 6 6 6-6"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12"/><path d="M18 6 6 18"/></symbol>
+  <symbol id="i-chev" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+  <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol>
+  <symbol id="i-moon" viewBox="0 0 24 24"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></symbol>
+  <symbol id="i-brief" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M3 13h18"/></symbol>
+  <symbol id="i-spark" viewBox="0 0 24 24"><path d="M11 3l1.9 5.1L18 10l-5.1 1.9L11 17l-1.9-5.1L4 10l5.1-1.9z"/><path d="M19 15v5"/><path d="M16.5 17.5h5"/></symbol>
+  <!-- filter and tag icons: one per key in content.js `filters` -->
+  <symbol id="t-all" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></symbol>
+  <symbol id="t-ai" viewBox="0 0 24 24"><path d="M11 3l1.9 5.1L18 10l-5.1 1.9L11 17l-1.9-5.1L4 10l5.1-1.9z"/><path d="M19 15v5"/><path d="M16.5 17.5h5"/></symbol>
+  <symbol id="t-vision" viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></symbol>
+  <symbol id="t-health" viewBox="0 0 24 24"><path d="M19 14c1.5-1.5 3-3.2 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.8 0-3 .5-4.5 2-1.5-1.5-2.7-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4 3 5.5l7 7z"/><path d="M3.5 12h4l1.5-3 2 6 1.5-3h4"/></symbol>
+  <symbol id="t-audio" viewBox="0 0 24 24"><path d="M3 10v4"/><path d="M7 6v12"/><path d="M11 3v18"/><path d="M15 8v8"/><path d="M19 10v4"/></symbol>
+  <symbol id="t-robotics" viewBox="0 0 24 24"><rect x="4" y="8" width="16" height="12" rx="3"/><path d="M12 8V5"/><circle cx="12" cy="4" r="1"/><path d="M9 13v2"/><path d="M15 13v2"/></symbol>
+  <symbol id="t-media" viewBox="0 0 24 24"><circle cx="12" cy="12" r="2"/><path d="M16.2 7.8a6 6 0 0 1 0 8.4"/><path d="M7.8 16.2a6 6 0 0 1 0-8.4"/><path d="M19.1 4.9a10 10 0 0 1 0 14.2"/><path d="M4.9 19.1a10 10 0 0 1 0-14.2"/></symbol>
+  <symbol id="t-desktop" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8"/><path d="M12 16v4"/></symbol>
+  <symbol id="t-web" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3a14 14 0 0 1 0 18"/><path d="M12 3a14 14 0 0 0 0 18"/></symbol>
+  <symbol id="t-systems" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2"/><rect x="9.5" y="9.5" width="5" height="5" rx=".5"/><path d="M9 2v4M15 2v4M9 18v4M15 18v4M2 9h4M2 15h4M18 9h4M18 15h4"/></symbol>
+  <symbol id="t-dot" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.5"/></symbol>
+  <!-- skill group icons (résumé) -->
+  <symbol id="s-chip" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2"/><rect x="9.5" y="9.5" width="5" height="5" rx=".5"/><path d="M9 2v4M15 2v4M9 18v4M15 18v4M2 9h4M2 15h4M18 9h4M18 15h4"/></symbol>
+  <symbol id="s-wave" viewBox="0 0 24 24"><path d="M2 12h3.5l2.5-7 4 14 3-10 2 3H22"/></symbol>
+  <symbol id="s-code" viewBox="0 0 24 24"><path d="m8 7-5 5 5 5"/><path d="m16 7 5 5-5 5"/><path d="m14 4-4 16"/></symbol>
+  <symbol id="s-layers" viewBox="0 0 24 24"><path d="m12 3 9 5-9 5-9-5z"/><path d="m3 13 9 5 9-5"/></symbol>
+  <!-- note-card kickers -->
+  <symbol id="k-gauge" viewBox="0 0 24 24"><path d="M3.3 19a10 10 0 1 1 17.4 0"/><path d="m12 15 4.5-5"/><circle cx="12" cy="15" r="1.5"/></symbol>
+  <symbol id="k-lock" viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></symbol>
+  <symbol id="k-gem" viewBox="0 0 24 24"><path d="M6 3h12l4 6-10 12L2 9z"/><path d="M2 9h20"/><path d="m10 3-2 6 4 12 4-12-2-6"/></symbol>
+</svg>
+
+<header class="hero" id="top">
+  <div class="scrim" aria-hidden="true"></div>
+  <div class="wrap hero-inner">
+    <nav class="topbar" aria-label="Site">
+      <a class="brand" href="#top" aria-label="Back to top">
+        <svg viewBox="0 0 32 32" aria-hidden="true"><use href="#mark"/></svg><span id="brand-name"></span>
+      </a>
+      <div class="nav-links" id="nav-links"></div>
+      <button class="icon-btn" id="theme" type="button" aria-label="Switch theme">
+        <svg class="i sun" aria-hidden="true"><use href="#i-sun"/></svg><svg class="i moon" aria-hidden="true"><use href="#i-moon"/></svg>
+      </button>
+    </nav>
+
+    <div class="hero-copy">
+      <h1 id="name"></h1>
+      <p class="alt" id="alt"></p>
+      <p class="bio" id="bio"></p>
+      <div class="pills" id="pills"></div>
+    </div>
+
+    <!-- Résumé: opens in place under the pills, from the Résumé pill, the nav, or /#resume -->
+    <section id="resume" class="resume" aria-labelledby="resume-title" inert>
+      <div class="resume-clip"><div class="resume-inner">
+        <div class="sheet">
+          <div class="sheet-top">
+            <h2 id="resume-title" tabindex="-1">Résumé</h2>
+            <div class="sheet-tools" id="sheet-tools"></div>
+            <button class="sheet-close" type="button" aria-label="Close résumé"><svg class="i" aria-hidden="true"><use href="#i-x"/></svg></button>
+          </div>
+          <div class="sheet-grid">
+            <div class="sheet-col" id="cv-left"></div>
+            <div class="sheet-col" id="cv-right"></div>
+          </div>
+        </div>
+      </div></div>
+    </section>
+
+    <a class="cue" href="#work"><span>Selected work</span><svg class="i" aria-hidden="true"><use href="#i-arrow"/></svg></a>
+    <!-- what the 3D scene actually did to build itself, shown once per visit (scene3d.js) -->
+    <div class="scene-log" id="scene-log" aria-hidden="true"><ol></ol></div>
+  </div>
+</header>
+
+<div class="wrap">
+  <main id="work">
+    <div class="filters" id="filters" role="group" aria-label="Show only"></div>
+    <!-- shelves of work and the notes, rendered from content.js -->
+    <div id="shelves"></div>
+  </main>
+</div>
+
+<footer><div class="wrap"><div class="foot-row">
+  <nav class="sitemap" id="sitemap" aria-label="Everything on this site"></nav>
+  <span class="copy" id="copy"></span>
+</div></div></footer>
+
+<noscript><p class="noscript">This portfolio draws its content with JavaScript. Turn it on to see the work, or visit <a href="https://github.com/HogwartLegacy">github.com/HogwartLegacy</a>.</p></noscript>
+
+<!-- the brand mark: a sun over two ridgelines, also used as the favicon -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs><linearGradient id="mark-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1B2050"/><stop offset=".62" stop-color="#7A4E73"/><stop offset="1" stop-color="#F0A868"/></linearGradient></defs>
+  <symbol id="mark" viewBox="0 0 32 32"><rect width="32" height="32" rx="8" fill="url(#mark-sky)"/><circle cx="20.5" cy="16.5" r="4" fill="#FFE7B8"/><path d="M0 23.5 6.5 15l4 4.5L16 12l7.5 10 3.5-3.5 5 4V32H0Z" fill="#3A2B4C"/><path d="M0 27.5 5 24l5 2.5 6-3.5 6.5 4 5.5-2.5 4 2V32H0Z" fill="#120E1B"/></symbol>
+</svg>
+
+<script src="content.js"></script>
+<script src="assets/js/covers.js"></script>
+<script src="assets/js/app.js"></script>
+<!-- the hero in 3D (WebGL); browsers without modules get the 2D painting -->
+<script type="module" src="assets/js/scene3d.js"></script>
+<script nomodule src="assets/js/scene2d.js"></script>
+</body>
+</html>
